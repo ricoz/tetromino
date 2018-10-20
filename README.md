@@ -1,6 +1,6 @@
 # Tetromino Game
 
-Project files for the [Swift Game Tutorial on SitePoint.com](http://www.sitepoint.com/series/swiftgametutorial/).
+Project files for the [Swift Game Tutorial on SitePoint.com](https://www.sitepoint.com/create-tetromino-puzzle-game-using-swift-getting-started/).
 
 ## Screenshots
 
