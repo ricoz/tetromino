@@ -9,15 +9,15 @@
 import SpriteKit
 
 let colors: [SKColor] = [
-    SKColor.lightGrayColor(),
-    SKColor.cyanColor(),
-    SKColor.yellowColor(),
-    SKColor.magentaColor(),
-    SKColor.blueColor(),
-    SKColor.orangeColor(),
-    SKColor.greenColor(),
-    SKColor.redColor(),
-    SKColor.darkGrayColor()
+    .lightGray,
+    .cyan,
+    .yellow,
+    .magenta,
+    .blue,
+    .orange,
+    .green,
+    .red,
+    .darkGray
 ]
 
 let gameBitmapDefault: [[Int]] = [
@@ -46,7 +46,7 @@ let gameBitmapDefault: [[Int]] = [
 ]
 
 let blockSize: CGFloat = 18.0
-let defaultSpeed = NSTimeInterval(1200)
+let defaultSpeed = TimeInterval(1200)
 
 class GameScene: SKScene {
     var dropTime = defaultSpeed
@@ -68,7 +68,7 @@ class GameScene: SKScene {
     var level = 1
     var nextLevel = 3000
 
-    override func didMoveToView(view: SKView) {
+    override func didMove(to view: SKView) {
         /* Setup your scene here */
         self.anchorPoint = CGPoint(x: 0, y: 1.0)
 
@@ -84,7 +84,7 @@ class GameScene: SKScene {
         }
         
         let gameBoardFrame = gameBoard.calculateAccumulatedFrame()
-        gameBoard.position = CGPoint(x: CGRectGetMidX(self.frame) - gameBoardFrame.width / 2, y: -125)
+        gameBoard.position = CGPoint(x: self.frame.midX - gameBoardFrame.width / 2, y: -125)
         self.addChild(gameBoard)
         
         centerActiveTetromino()
@@ -102,18 +102,18 @@ class GameScene: SKScene {
         let brickWidth = activeTetromino.bitmap[0].count
         activeTetromino.position = (cols / 2 -  brickWidth, 0)
     }
-    
-    override func touchesBegan(touches: NSSet, withEvent event: UIEvent) {
+
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         /* Called when a touch begins */
         for touch: AnyObject in touches {
-            let location = touch.locationInNode(self)
+            let location = touch.location(in: self)
             let gameBoardFrame = gameBoard.calculateAccumulatedFrame()
-            
+
             if location.x < gameBoardFrame.origin.x {
-                moveTetrominoTo(.Left)
+                moveTetrominoTo(direction: .left)
             } else if location.x > gameBoardFrame.origin.x + gameBoardFrame.width {
-                moveTetrominoTo(.Right)
-            } else if CGRectContainsPoint(gameBoardFrame, location) {
+                moveTetrominoTo(direction: .right)
+            } else if gameBoardFrame.contains(location) {
                 rotateTetromino()
             } else if location.y < gameBoardFrame.origin.y {
                 instaDrop()
@@ -121,26 +121,26 @@ class GameScene: SKScene {
         }
     }
    
-    override func update(currentTime: CFTimeInterval) {
+    override func update(_ currentTime: CFTimeInterval) {
         /* Called before each frame is rendered */
         if lastUpdate != nil {
             let elapsed = lastUpdate!.timeIntervalSinceNow * -1000.0
             if elapsed > dropTime {
-                moveTetrominoTo(.Down)
+                moveTetrominoTo(direction: .down)
             }
         }
     }
     
     func moveTetrominoTo(direction: Direction) {
-        if collidedWith(direction) == false {
-            activeTetromino.moveTo(direction)
+        if collidedWith(direction: direction) == false {
+            activeTetromino.moveTo(direction: direction)
             
-            if direction == .Down {
+            if direction == .down {
                 updateScoreWith()
                 lastUpdate = NSDate()
             }
         } else {
-            if direction == .Down {
+            if direction == .down {
                 didLand()
                 return
             }
@@ -152,8 +152,8 @@ class GameScene: SKScene {
     func rotateTetromino() {
         activeTetromino.rotate()
         
-        if collidedWith(.None) {
-            activeTetromino.rotate(rotation: .Clockwise)
+        if collidedWith(direction: .none) {
+            activeTetromino.rotate(rotation: .clockwise)
         } else {
             refresh()
         }
@@ -176,14 +176,14 @@ class GameScene: SKScene {
         let y = activeTetromino.position.y
         
         switch direction {
-        case .Left:
-            return collided(x - 1, y)
-        case .Right:
-            return collided(x + 1, y)
-        case .Down:
-            return collided(x, y + 1)
-        case .None:
-            return collided(x, y)
+        case .left:
+            return collided(x: x - 1, y: y)
+        case .right:
+            return collided(x: x + 1, y: y)
+        case .down:
+            return collided(x: x, y: y + 1)
+        case .none:
+            return collided(x: x, y: y)
         }
     }
     
@@ -204,19 +204,17 @@ class GameScene: SKScene {
         
         if linesToClear.count > 0 {
             for line in linesToClear {
-                gameBitmapDynamic.removeAtIndex(line)
-                gameBitmapDynamic.insert([8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8], atIndex: 1)
+                gameBitmapDynamic.remove(at: line)
+                gameBitmapDynamic.insert([8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8], at: 1)
             }
-            
-            var multiplier = linesToClear.count == 4 ? 10 : 1
             updateScoreWith(points: linesToClear.count * linesToClear.count * linesToClear.count)
         }
     }
     
     func instaDrop() {
-        while collidedWith(.Down) == false {
+        while collidedWith(direction: .down) == false {
             updateScoreWith(points: 2)
-            activeTetromino.moveTo(.Down)
+            activeTetromino.moveTo(direction: .down)
             updateGameBitmap()
             
         }
@@ -226,7 +224,7 @@ class GameScene: SKScene {
     func didLand() {
         clearLines()
         
-        gameBitmapStatic.removeAll(keepCapacity: true)
+        gameBitmapStatic.removeAll(keepingCapacity: true)
         gameBitmapStatic = gameBitmapDynamic
         
         activeTetromino = nextTetromino
@@ -245,7 +243,7 @@ class GameScene: SKScene {
     }
     
     func updateGameBitmap() {
-        gameBitmapDynamic.removeAll(keepCapacity: true)
+        gameBitmapDynamic.removeAll(keepingCapacity: true)
         gameBitmapDynamic = gameBitmapStatic
         
         for row in 0..<activeTetromino.bitmap.count {
@@ -258,7 +256,9 @@ class GameScene: SKScene {
     }
     
     func updateGameBoard() {
-        let squares = gameBoard.children as [SKSpriteNode]
+        guard let squares = gameBoard.children as? [SKSpriteNode] else {
+            return
+        }
         var currentSquare = 0
         
         for col in 0..<gameBitmapDynamic[0].count {
@@ -268,7 +268,7 @@ class GameScene: SKScene {
                 if square.color != colors[bit] {
                     square.color = colors[bit]
                 }
-                ++currentSquare
+                currentSquare += 1
             }
         }
     }
@@ -303,15 +303,15 @@ class GameScene: SKScene {
             
             scoreLabel.text = "Score: \(score)"
             scoreLabel.fontSize = 20.0
-            scoreLabel.fontColor = SKColor.whiteColor()
-            scoreLabel.horizontalAlignmentMode = .Left
+            scoreLabel.fontColor = SKColor.white
+            scoreLabel.horizontalAlignmentMode = .left
             scoreLabel.position = CGPoint(x: gameBoardFrame.origin.x, y: -scoreLabel.frame.height - 50)
             self.addChild(scoreLabel)
             
             levelLabel.text = "Level: \(level)"
             levelLabel.fontSize = 20.0
-            levelLabel.fontColor = SKColor.whiteColor()
-            levelLabel.horizontalAlignmentMode = .Left
+            levelLabel.fontColor = SKColor.white
+            levelLabel.horizontalAlignmentMode = .left
             levelLabel.position = CGPoint(x: scoreLabel.frame.origin.x, y: -levelLabel.frame.height - scoreLabel.frame.height - 50 - 10)
             self.addChild(levelLabel)
         }
@@ -320,7 +320,7 @@ class GameScene: SKScene {
         scoreLabel.text = "Score: \(score)"
         
         if score > nextLevel {
-            levelLabel.text = "Level: \(++level)"
+            levelLabel.text = "Level: \(level += 1)"
             nextLevel = Int(2.5 * Double(nextLevel))
             
             if dropTime - 150 <= 0 {

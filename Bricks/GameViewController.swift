@@ -14,8 +14,9 @@ class GameViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        // Configure the view.
-        let skView = self.view as SKView
+        guard let skView = self.view as? SKView else {
+            return
+        }
         skView.showsFPS = true
         skView.showsNodeCount = true
         
@@ -25,7 +26,7 @@ class GameViewController: UIViewController {
         let scene = GameScene(size: skView.bounds.size)
         
         /* Set the scale mode to scale to fit the window */
-        scene.scaleMode = .AspectFill
+        scene.scaleMode = .aspectFill
         
         skView.presentScene(scene)
     }
@@ -35,7 +36,7 @@ class GameViewController: UIViewController {
         // Release any cached data, images, etc that aren't in use.
     }
 
-    override func prefersStatusBarHidden() -> Bool {
+    override var prefersStatusBarHidden: Bool {
         return true
     }
 }
