@@ -9,11 +9,11 @@
 import Foundation
 
 enum Direction {
-    case Left, Right, Down, None
+    case left, right, down, none
 }
 
 enum Rotation {
-    case Counterclockwise, Clockwise
+    case counterclockwise, clockwise
 }
 
 enum Shape {
@@ -57,32 +57,32 @@ class Tetromino {
     
     func moveTo(direction: Direction) {
         switch direction {
-        case .Left:
-            --position.x
-        case .Right:
-            ++position.x
-        case .Down:
-            ++position.y
-        case .None:
+        case .left:
+            position.x -= 1
+        case .right:
+            position.x += 1
+        case .down:
+            position.y += 1
+        case .none:
             break
         }
     }
     
-    func rotate(rotation: Rotation = .Counterclockwise) {
+    func rotate(rotation: Rotation = .counterclockwise) {
         switch rotation {
-        case .Counterclockwise:
+        case .counterclockwise:
             let bitmapSet = bitmaps[shape]!
             if rotationalState + 1 == bitmapSet.count {
                 rotationalState = 0
             } else {
-                ++rotationalState
+                rotationalState += 1
             }
-        case .Clockwise:
+        case .clockwise:
             let bitmapSet = bitmaps[shape]!
             if rotationalState == 0 {
                 rotationalState = bitmapSet.count - 1
             } else {
-                --rotationalState
+                rotationalState -= 1
             }
         }
     }
